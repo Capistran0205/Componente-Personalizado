@@ -1,53 +1,68 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package TablaBD.app.com;
-import javax.swing.table.AbstractTableModel;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.JOptionPane;
+import javax.swing.table.AbstractTableModel;
 
 /**
- * Modelo de datos para representar una tabla en una interfaz gráfica.
- * Esta clase extiende <code>AbstractTableModel</code> y proporciona los datos de una base de datos
- * para ser mostrados en un <code>JTable</code>. Se encarga de cargar los datos desde una base de datos
- * (MySQL o SQL Server) y proporcionar los valores de la tabla para la visualización.
- * 
+ * Modelo de datos para representar una tabla en una interfaz gráfica. Esta
+ * clase extiende <code>AbstractTableModel</code> y proporciona los datos de una
+ * base de datos para ser mostrados en un <code>JTable</code>. Se encarga de
+ * cargar los datos desde una base de datos (MySQL o SQL Server) y proporcionar
+ * los valores de la tabla para la visualización.
+ *
  * @authors capistran y díaz
  * @version 1.0
  */
 public class ModeloDatos extends AbstractTableModel {
-    
+
     // Atributos
     private ArrayList<Object[]> data; // Lista que contiene las filas de la tabla
     private String[] columnNames; // Nombres de las columnas
     private Conexion conexion; // Objeto que maneja las conexiones a la base de datos
+    private ArrayList<String> metaData; // Lista para contener los metadatos de la BD
     private int opcionBase; // Opción que indica qué tipo de base de datos se está utilizando (1 para SQL Server, 2 para MySQL)
 
     /**
-     * Constructor de la clase <code>ModeloDatos</code>.
-     * Inicializa los atributos y carga los datos de la base de datos correspondiente.
-     * 
+     * Constructor de la clase <code>ModeloDatos</code>. Inicializa los
+     * atributos y carga los datos de la base de datos correspondiente.
+     *
      * @param conexion El objeto que maneja la conexión con la base de datos.
-     * @param opcionBase La opción que especifica qué base de datos utilizar (1 para SQL Server, 2 para MySQL).
+     * @param opcionBase La opción que especifica qué base de datos utilizar (1
+     * para SQL Server, 2 para MySQL).
      */
     public ModeloDatos(Conexion conexion, int opcionBase) {
         this.conexion = conexion;
         this.opcionBase = opcionBase;
-        data = new ArrayList<>(); // Inicializa la lista de datos (filas)
-        loadData(); // Carga los datos de la base de datos
+        metaData = new ArrayList<>(); // Incializa la lista de metadatos         
     }
 
     /**
-     * Carga los datos desde la base de datos especificada.
-     * Solicita al usuario el nombre de la tabla y realiza una consulta SQL para obtener
-     * los datos y cargarlos en el modelo de datos.
-     * 
-     * El método maneja tanto la conexión a MySQL como a SQL Server, dependiendo de la opción seleccionada.
+     * Sobrecarga del constructor cuando se específica la consulta completa o
+     * una de mayor complejidad
+     *
+     * @param conexion
+     * @param opcionBase
+     * @param sqlQuery
+     */
+    public ModeloDatos(Conexion conexion, int opcionBase, String sqlQuery) {
+        this.conexion = conexion; // Incializa la lista de metadatos
+        this.opcionBase = opcionBase;
+        data = new ArrayList<>(); // Inicializa el arreglo 
+        loadData(sqlQuery); // Cargar el modelo de datos
+    }
+
+    /**
+     * Carga los datos desde la base de datos especificada. Solicita al usuario
+     * el nombre de la tabla y realiza una consulta SQL para obtener los datos y
+     * cargarlos en el modelo de datos.
+     *
+     * El método maneja tanto la conexión a MySQL como a SQL Server, dependiendo
+     * de la opción seleccionada.
      */
     private void loadData() {
         String tableName = JOptionPane.showInputDialog(null, "Ingrese el nombre de la tabla:", "Nombre de la Tabla",
@@ -61,18 +76,7 @@ public class ModeloDatos extends AbstractTableModel {
         }
 
         // Establece la conexión según la base de datos seleccionada
-        switch (opcionBase) {
-            case 1:
-                conn = conexion.getConexionSQLServer(); // Conexión con SQL Server
-                break;
-            case 2:
-                conn = conexion.getConexionMySQL(); // Conexión con MySQL
-                break;
-            default:
-                JOptionPane.showMessageDialog(null, "Opción no disponible", "Validación de BD",
-                        JOptionPane.WARNING_MESSAGE); // Muestra un mensaje si la opción no es válida
-                return;
-        }
+        conn = conexion.getConexion(Conexion.getIdSGBD());
 
         // Si la conexión fue exitosa, realiza la consulta y carga los datos
         if (conn != null) {
@@ -100,7 +104,7 @@ public class ModeloDatos extends AbstractTableModel {
                 rs.close(); // Cierra el ResultSet
                 fireTableDataChanged(); // Notifica que los datos han cambiado para actualizar la vista de la tabla
             } catch (SQLException e) {
-                e.printStackTrace(); // Muestra el error en consola en caso de una excepción SQL
+                JOptionPane.showMessageDialog(null, "Ocurrio un error en el modelo de datos" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // Muestra el error en consola en caso de una excepción SQL
             } finally {
                 conexion.cerrarConexion(); // Cierra la conexión a la base de datos
             }
@@ -110,8 +114,93 @@ public class ModeloDatos extends AbstractTableModel {
     }
 
     /**
+     * Carga datos desde una consulta SQL y almacena la información en
+     * estructuras dinámicas.
+     *
+     * @param sqlQuery La consulta SQL que se utilizará para obtener los datos.
+     */
+    private void loadData(String sqlQuery) {
+        Connection conn = null;
+
+        // Verifica que la consulta no sea nula o vacía
+        if (sqlQuery == null || sqlQuery.isEmpty()) {
+            System.err.println("El valor de la query no fue definido");
+            return; // Sale si no se proporciona una consulta válida
+        }
+
+        // Establece la conexión según la base de datos seleccionada
+        conn = conexion.getConexion(Conexion.getIdSGBD());
+
+        // Si la conexión fue exitosa, ejecuta la consulta y procesa los resultados
+        if (conn != null) {
+            try {
+                // Ejecuta la consulta para obtener los datos de la tabla
+                ResultSet rs = Consulta.executeQueryRead(conn, sqlQuery);
+
+                // Obtiene la cantidad de columnas en la tabla
+                int columnCount = rs.getMetaData().getColumnCount();
+                columnNames = new String[columnCount];
+
+                // Recupera los nombres de las columnas
+                for (int i = 0; i < columnCount; i++) {
+                    columnNames[i] = rs.getMetaData().getColumnName(i + 1);
+                }
+
+                // Carga los datos de las filas en la lista
+                while (rs.next()) {
+                    Object[] row = new Object[columnCount];
+                    for (int i = 0; i < columnCount; i++) {
+                        row[i] = rs.getObject(i + 1);
+                    }
+                    System.out.println("Fila cargada: " + Arrays.toString(row));
+                    data.add(row);
+                }
+
+                rs.close(); // Cierra el ResultSet
+                fireTableDataChanged(); // Notifica que los datos han cambiado para actualizar la vista
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Ocurrió un error en el modelo de datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                conexion.cerrarConexion(); // Cierra la conexión a la base de datos
+            }
+        } else {
+            System.err.println("Error al establecer la conexión");
+        }
+    }
+
+    /**
+     * Obtiene los nombres de las tablas en la base de datos seleccionada.
+     *
+     * @return Una lista con los nombres de las tablas disponibles en la base de datos.
+     */
+    public ArrayList<String> getLoadMetaData() {
+        Connection conn = null;
+
+        // Establece la conexión según la base de datos seleccionada
+        conn = conexion.getConexion(Conexion.getIdSGBD());
+
+        // Verifica el estado de la conexión antes de proceder
+        if (conexion.getStateConnection()) {
+            try {
+                ResultSet tables = conexion.getTablesMetaData();
+
+                // Almacena los nombres de las tablas en la lista metaData
+                while (tables.next()) {
+                    metaData.add(tables.getString("TABLE_NAME"));
+                }
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Ocurrió un error en el modelo de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                conexion.cerrarConexion(); // Cierra la conexión a la base de datos
+            }
+        }
+        return metaData;
+    }
+
+    /**
      * Devuelve el número de filas en la tabla.
-     * 
+     *
      * @return El número de filas en la tabla de datos.
      */
     @Override
@@ -121,7 +210,7 @@ public class ModeloDatos extends AbstractTableModel {
 
     /**
      * Devuelve el número de columnas en la tabla.
-     * 
+     *
      * @return El número de columnas en la tabla de datos.
      */
     @Override
@@ -130,11 +219,13 @@ public class ModeloDatos extends AbstractTableModel {
     }
 
     /**
-     * Devuelve el valor de una celda en la tabla, especificada por su fila y columna.
-     * 
+     * Devuelve el valor de una celda en la tabla, especificada por su fila y
+     * columna.
+     *
      * @param rowIndex El índice de la fila (comienza en 0).
      * @param columnIndex El índice de la columna (comienza en 0).
-     * @return El valor en la celda correspondiente a la fila y columna especificadas.
+     * @return El valor en la celda correspondiente a la fila y columna
+     * especificadas.
      */
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -143,7 +234,7 @@ public class ModeloDatos extends AbstractTableModel {
 
     /**
      * Devuelve el nombre de una columna de la tabla.
-     * 
+     *
      * @param column El índice de la columna (comienza en 0).
      * @return El nombre de la columna especificada.
      */
