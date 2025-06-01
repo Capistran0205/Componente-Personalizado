@@ -124,7 +124,7 @@ public class ModeloDatos extends AbstractTableModel {
 
         // Verifica que la consulta no sea nula o vacía
         if (sqlQuery == null || sqlQuery.isEmpty()) {
-            System.err.println("El valor de la query no fue definido");
+            System.err.println("La query no fue definida");
             return; // Sale si no se proporciona una consulta válida
         }
 
@@ -178,11 +178,11 @@ public class ModeloDatos extends AbstractTableModel {
 
         // Establece la conexión según la base de datos seleccionada
         conn = conexion.getConexion(Conexion.getIdSGBD());
-
+        
         // Verifica el estado de la conexión antes de proceder
         if (conexion.getStateConnection()) {
             try {
-                ResultSet tables = conexion.getTablesMetaData();
+                ResultSet tables = Consulta.getTablesMetaData(conn);
 
                 // Almacena los nombres de las tablas en la lista metaData
                 while (tables.next()) {

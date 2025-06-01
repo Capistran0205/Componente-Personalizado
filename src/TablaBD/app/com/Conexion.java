@@ -22,8 +22,7 @@ public class Conexion {
     private static String usuarioUsed; // Usuario para la autenticación en la base de datos
     private static String passwordUsed; // Contraseña para la autenticación en la base de datos
     private static int idSGBD; // Identificador para reestablecer la bd seleccionada
-    private static Connection conexion = null; // Objeto Connection que representa la conexión a la base de datos
-    private static DatabaseMetaData metaDataDB;
+    private static Connection conexion = null; // Objeto Connection que representa la conexión a la base de datos    
     private static final String CERTIFICADOS = "encrypt=true; trustServerCertificate=true; characterEncoding=UTF-8;"; // Configuración para la conexión a SQL Server
 
     /**
@@ -39,7 +38,6 @@ public class Conexion {
         Conexion.baseUsed = base;
         Conexion.usuarioUsed = usuario;
         Conexion.passwordUsed = password;
-        metaDataDB = null;
     }
 
     /**
@@ -258,28 +256,5 @@ public class Conexion {
      * @return Un {@link ResultSet} que contiene información sobre las tablas
      * encontradas (nombre, tipo, esquema, etc.), o {@code null} si no hay
      * conexión activa o ocurre un error durante la consulta.
-     */
-    public ResultSet getTablesMetaData() {
-        ResultSet tables = null;
-
-        // Verifica que la conexión esté activa antes de continuar
-        if (getStateConnection()) {
-            try {
-                // Obtiene los metadatos de la base de datos desde la conexión actual
-                metaDataDB = conexion.getMetaData();
-
-                // Recupera las tablas del esquema "dbo" de la base de datos especificada
-                tables = metaDataDB.getTables(baseUsed, "dbo", "%", new String[]{"TABLE"});
-
-            } catch (SQLException e) {
-                // Muestra un mensaje de error si la consulta falla
-                JOptionPane.showMessageDialog(null,
-                        "Error al consultar las tablas de la BD",
-                        "Error" + e.getMessage(),
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
-        return tables;
-    }
-
+     */    
 }
