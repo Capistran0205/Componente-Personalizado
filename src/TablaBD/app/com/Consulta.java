@@ -1,12 +1,11 @@
 package TablaBD.app.com;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
-import java.sql.Types;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
@@ -271,30 +270,30 @@ public class Consulta {
 //     * columnas.
 //     * @param base El nombre de la base de datos donde se encuentra la tabla.
 //     */
-//    public static void setCommonColumnsTable(Connection connection, String tableName, String base) {
-//
-//        try {
-//            // Obtención de los metadatos de la conexión con la base de datos
-//            Consulta.metaDataDB = connection.getMetaData();
-//
-//            // Se recuperan los metadatos de las columnas de la tabla especificada
-//            Consulta.tableMetaData = metaDataDB.getColumns(base, "dbo", tableName, "%");
-//
-//            // Inicialización de las listas dinámicas para almacenar la información de las columnas
-//            Consulta.columnsDescrip = new ArrayList<>();
-//            Consulta.columnsType = new ArrayList<>();
-//
-//            // Inicialización del contador de columnas
-//            Consulta.countColumns = 0;
-//
-//            // Iteración sobre los metadatos de las columnas
-//            while (tableMetaData.next()) {
-//                // Obtención de la propiedad de autoincremento de la columna
-//                String isAutoInc = tableMetaData.getString("IS_AUTOINCREMENT");
-//                // Obtención del nombre al valor asociado de la columna
-//                String typeColumn = tableMetaData.getString("TYPE_NAME");
-//
-//                // Filtra aquellas columnas que no sean autoincrementables o de encriptación 
+    public static void setCommonColumnsTable(Connection connection, String tableName, String base) {
+
+        try {
+            // Obtención de los metadatos de la conexión con la base de datos
+            Consulta.metaDataDB = connection.getMetaData();
+
+            // Se recuperan los metadatos de las columnas de la tabla especificada
+            Consulta.tableMetaData = metaDataDB.getColumns(base, "dbo", tableName, "%");
+
+            // Inicialización de las listas dinámicas para almacenar la información de las columnas
+            Consulta.columnsDescrip = new ArrayList<>();
+            Consulta.columnsType = new ArrayList<>();
+
+            // Inicialización del contador de columnas
+            Consulta.countColumns = 0;
+
+            // Iteración sobre los metadatos de las columnas
+            while (tableMetaData.next()) {
+                // Obtención de la propiedad de autoincremento de la columna
+                // String isAutoInc = tableMetaData.getString("IS_AUTOINCREMENT");
+                // Obtención del nombre al valor asociado de la columna
+                String typeColumn = tableMetaData.getString("TYPE_NAME");
+
+                // Filtra aquellas columnas que no sean autoincrementables o de encriptación 
 //                if (!"YES".equals(isAutoInc) && !(typeColumn.equalsIgnoreCase("BLOB") || typeColumn.equalsIgnoreCase("VARBINARY"))) {
 //                    // Agrega el nombre de la columna a la lista correspondiente
 //                    Consulta.columnsDescrip.add(tableMetaData.getString("COLUMN_NAME"));
@@ -305,65 +304,73 @@ public class Consulta {
 //                    // Incrementa el contador de columnas
 //                    Consulta.countColumns++;
 //                }
-//            }
-//        } catch (SQLException ex) {
-//            // Manejo de errores: muestra un mensaje en caso de fallo al obtener las columnas de la tabla
-//            JOptionPane.showMessageDialog(null, "Ocurrió un error al obtener las columnas de la tabla: "
-//                    + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//        } finally {
-//            Conexion.cerrarConexion();
-//        }
-//    }
-//
-//    /**
-//     * Establece las columnas que actúan como claves primarias (Primary Keys) en
-//     * una tabla específica de una base de datos.
-//     *
-//     * <p>
-//     * Este método accede a los metadatos de la base de datos a través de la
-//     * conexión provista y extrae información sobre las columnas que son claves
-//     * primarias. Además, inicializa estructuras necesarias para el
-//     * procesamiento posterior de datos de la tabla, como el tipo de dato de las
-//     * columnas y su conteo.</p>
-//     *
-//     * <p>
-//     * Al finalizar, también invoca
-//     * {@link #setCommonColumnsTable(Connection, String, String)} para
-//     * complementar la estructura con columnas comunes.</p>
-//     *
-//     * @param connection Conexión activa a la base de datos.
-//     * @param tableName Nombre de la tabla desde la cual se obtendrán las claves
-//     * primarias.
-//     * @param base Nombre de la base de datos a la que pertenece la tabla.
-//     */
-//    public static void setPrimaryColumnsTable(Connection connection, String tableName, String base) {
-//        try {
-//            // Obtención de metadatos del esquema de la base de datos
-//            Consulta.metaDataDB = connection.getMetaData();
-//
-//            // Obtiene los metadatos relacionados con las claves primarias de la tabla
-//            Consulta.tableMetaData = metaDataDB.getPrimaryKeys(base, "dbo", tableName);
-//
-//            // Inicialización de listas y contador
-//            Consulta.columnsId = new ArrayList<>();
-//            Consulta.columnsType = new ArrayList<>();
-//            Consulta.countColumns = 0;
-//
-//            // Iteración sobre los resultados para almacenar los nombres y tipos de columnas clave primaria
-//            while (tableMetaData.next()) {
-//                columnsId.add(tableMetaData.getString("COLUMN_NAME"));
-//                columnsType.add(tableMetaData.getInt("DATA_TYPE"));
-//            }
-//        } catch (SQLException ex) {
-//            JOptionPane.showMessageDialog(null, "Ocurrió un error al obtener las columnas de la tabla: "
-//                    + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//        } finally {
-//            Conexion.cerrarConexion();
-//        }
-//
-//        // Agrega columnas comunes para completar la descripción de la tabla
-//        setCommonColumnsTable(connection, tableName, base);
-//    }
+                // Agrega el nombre de la columna a la lista correspondiente
+                Consulta.columnsDescrip.add(tableMetaData.getString("COLUMN_NAME"));
+
+                // Agrega el tipo de dato de la columna a la lista correspondiente
+                Consulta.columnsType.add(tableMetaData.getInt("DATA_TYPE"));
+
+                // Incrementa el contador de columnas
+                Consulta.countColumns++;
+            }
+        } catch (SQLException ex) {
+            // Manejo de errores: muestra un mensaje en caso de fallo al obtener las columnas de la tabla
+            JOptionPane.showMessageDialog(null, "Ocurrió un error al obtener las columnas de la tabla: "
+                    + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            Conexion.cerrarConexion();
+        }
+    }
+
+    /**
+     * Establece las columnas que actúan como claves primarias (Primary Keys) en
+     * una tabla específica de una base de datos.
+     *
+     * <p>
+     * Este método accede a los metadatos de la base de datos a través de la
+     * conexión provista y extrae información sobre las columnas que son claves
+     * primarias. Además, inicializa estructuras necesarias para el
+     * procesamiento posterior de datos de la tabla, como el tipo de dato de las
+     * columnas y su conteo.</p>
+     *
+     * <p>
+     * Al finalizar, también invoca
+     * {@link #setCommonColumnsTable(Connection, String, String)} para
+     * complementar la estructura con columnas comunes.</p>
+     *
+     * @param connection Conexión activa a la base de datos.
+     * @param tableName Nombre de la tabla desde la cual se obtendrán las claves
+     * primarias.
+     * @param base Nombre de la base de datos a la que pertenece la tabla.
+     */
+    public static void setPrimaryColumnsTable(Connection connection, String tableName, String base) {
+        try {
+            // Obtención de metadatos del esquema de la base de datos
+            Consulta.metaDataDB = connection.getMetaData();
+
+            // Obtiene los metadatos relacionados con las claves primarias de la tabla
+            Consulta.tableMetaData = metaDataDB.getPrimaryKeys(base, "dbo", tableName);
+
+            // Inicialización de listas y contador
+            Consulta.columnsId = new ArrayList<>();
+            Consulta.columnsType = new ArrayList<>();
+            Consulta.countColumns = 0;
+
+            // Iteración sobre los resultados para almacenar los nombres y tipos de columnas clave primaria
+            while (tableMetaData.next()) {
+                columnsId.add(tableMetaData.getString("COLUMN_NAME"));
+                columnsType.add(tableMetaData.getInt("DATA_TYPE"));
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Ocurrió un error al obtener las columnas de la tabla: "
+                    + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            Conexion.cerrarConexion();
+        }
+
+        // Agrega columnas comunes para completar la descripción de la tabla
+        setCommonColumnsTable(connection, tableName, base);
+    }
 
     /**
      * Recupera la lista de nombres de todas las bases de datos disponibles
@@ -413,22 +420,21 @@ public class Consulta {
 
         return dataBases;
     }
+
     
     /**
-     * Ejecuta una consulta SQL para obtener todas las tablas de una BD del SGBD a usar, sea MySQL y SQL Server
-     * 
-     * 
+     * Obtiene el conjunto de tablas definidas por el usuario en la base de
+     * datos actual a través de los metadatos de la conexión.
      * <p>
-     * Soporta SQL Server y MySQL. Si el motor de base de datos no es compatible
-     * o no hay conexión activa, se muestra un mensaje de error.</p>
-     * 
-     * Este método mediante una query de lectura obtiene las bases de datos
-     * @param connection Conexión activa a la base de datos.
-     * @return Lista de nombres de bases de datos disponibles. Devuelve una
-     * lista vacía si ocurre un error o no hay conexión.
-     * 
-     */
-    
+     * Este método utiliza `DatabaseMetaData.getTables()` para consultar todas
+     * las tablas del esquema `"dbo"` en la base de datos especificada por
+     * `baseUsed`, siempre que la conexión esté activa.
+     * </p>
+     *
+     * @return Un {@link ResultSet} que contiene información sobre las tablas
+     * encontradas (nombre, tipo, esquema, etc.), o {@code null} si no hay
+     * conexión activa o ocurre un error durante la consulta.
+     */  
     public static ResultSet getTablesMetaData(Connection conexion) {
         ResultSet tables = null;
 
@@ -498,17 +504,18 @@ public class Consulta {
         }
         return null;
     }
-    
-    public static String executeQueryWrite(Connection connection, String sqlQuery)throws SQLException{        
-        if (sqlQuery != null && !sqlQuery.isBlank() && Conexion.getStateConnection()){
+
+    public static String executeQueryWrite(Connection connection, String sqlQuery) throws SQLException {
+        if (sqlQuery != null && !sqlQuery.isBlank() && Conexion.getStateConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(sqlQuery);
-            if(pstmt.executeUpdate() > 0){
+            if (pstmt.executeUpdate() > 0) {
                 Conexion.cerrarConexion();
-                return "Consulta ejecutada exitosamente";  
+                return "Consulta ejecutada exitosamente";
             }
         }
         return "Consulta ejecutada";
-    }    
+    }
+
     /**
      * Establece el tipo de escritura de la consulta.
      *
@@ -526,6 +533,10 @@ public class Consulta {
      */
     public static ArrayList<String> getColumnsDescrip() {
         return columnsDescrip;
+    }
+    
+    public static ArrayList<Integer> getColumnsType(){
+        return columnsType;
     }
 
     /**

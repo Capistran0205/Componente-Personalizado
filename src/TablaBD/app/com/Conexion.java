@@ -1,10 +1,8 @@
 package TablaBD.app.com;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import javax.swing.JOptionPane;
 
 /**
@@ -140,8 +138,8 @@ public class Conexion {
                 conexion = DriverManager.getConnection("jdbc:mysql://localhost:3306/"+baseUsed, usuarioUsed, passwordUsed); // Establece la conexión
             else
                conexion = DriverManager.getConnection("jdbc:mysql://localhost:3306/?", usuarioUsed, passwordUsed); // Establece la conexión
-            JOptionPane.showMessageDialog(null, "Conexión Abierta con MySQL Exitosamente", "Mensaje de Estado de Conexión",
-                    JOptionPane.INFORMATION_MESSAGE); // Mensaje de éxito
+            /* JOptionPane.showMessageDialog(null, "Conexión Abierta con MySQL Exitosamente", "Mensaje de Estado de Conexión",
+                    JOptionPane.INFORMATION_MESSAGE);*/ // Mensaje de éxito
         } catch (SQLException | ClassNotFoundException e) { // Captura errores de conexión SQL
             System.err.println(e.getMessage());
         }
@@ -170,8 +168,8 @@ public class Conexion {
             else
                 Conexion.conexion = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;"
                         +"user=" + usuarioUsed + ";" + "password=" + passwordUsed + ";" + CERTIFICADOS); // Establece la conexión
-            JOptionPane.showMessageDialog(null, "Conexión Abierta con SQL Server Exitosamente", "Mensaje de Estado de Conexión",
-                    JOptionPane.INFORMATION_MESSAGE); // Mensaje de éxito
+            /* JOptionPane.showMessageDialog(null, "Conexión Abierta con SQL Server Exitosamente", "Mensaje de Estado de Conexión",
+                    JOptionPane.INFORMATION_MESSAGE);*/  // Mensaje de éxito
         } catch (SQLException | ClassNotFoundException e) { // Captura errores de conexión SQL
             System.err.println(e.getMessage());
         }
@@ -215,10 +213,10 @@ public class Conexion {
     public static void cerrarConexion() {
         try {
             conexion.close(); // Cierra la conexión
-            JOptionPane.showMessageDialog(null, "Conexión Cerrada Exitosamente", "Mensaje de Estado de Conexión",
-                    JOptionPane.INFORMATION_MESSAGE); // Mensaje de éxito
+            /*JOptionPane.showMessageDialog(null, "Conexión Cerrada Exitosamente", "Mensaje de Estado de Conexión",
+                    JOptionPane.INFORMATION_MESSAGE);*/ // Mensaje de éxito
         } catch (SQLException e) { // Captura errores al cerrar la conexión
-            JOptionPane.showMessageDialog(null, "Ocurrio un error: " + e.getMessage(), "Mensaje de Error",
+            JOptionPane.showMessageDialog(null, "Ocurrio un error al tratar de cerrar la conexión: " + e.getMessage(), "Mensaje de Error",
                     JOptionPane.ERROR_MESSAGE); // Mensaje de error
         }
     }
@@ -242,19 +240,5 @@ public class Conexion {
             JOptionPane.showMessageDialog(null, "Error al consultar el estado de la conexión", "Error" + e.getMessage(), JOptionPane.ERROR_MESSAGE);
         }
         return false; // Estado de la conexión cerrado
-    }
-
-    /**
-     * Obtiene el conjunto de tablas definidas por el usuario en la base de
-     * datos actual a través de los metadatos de la conexión.
-     * <p>
-     * Este método utiliza `DatabaseMetaData.getTables()` para consultar todas
-     * las tablas del esquema `"dbo"` en la base de datos especificada por
-     * `baseUsed`, siempre que la conexión esté activa.
-     * </p>
-     *
-     * @return Un {@link ResultSet} que contiene información sobre las tablas
-     * encontradas (nombre, tipo, esquema, etc.), o {@code null} si no hay
-     * conexión activa o ocurre un error durante la consulta.
-     */    
+    }  
 }
