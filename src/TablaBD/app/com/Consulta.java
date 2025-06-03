@@ -549,7 +549,46 @@ public class Consulta {
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
-    }        
+    }
+    
+    /**
+    * Recupera una única fila de una tabla específica usando una columna clave como filtro.
+    *
+    * @param connection Conexión activa a la base de datos.
+    * @param tableName Nombre de la tabla donde se encuentra la fila.
+    * @param columnKey Nombre de la columna que actúa como filtro (normalmente la clave primaria).
+    * @param value Valor de la clave por la cual se identificará la fila.
+    * @return Un ResultSet con la fila encontrada o null si no hay resultados o hay error.
+    */
+    public static ResultSet getRowById(Connection connection, String tableName, String columnKey, Object value) {
+        ResultSet result = null;
+
+        if (Conexion.getStateConnection()) {
+            String query = "SELECT * FROM " + tableName + " WHERE " + columnKey + " = ?";
+            try {
+                PreparedStatement pstmt = connection.prepareStatement(query);
+                pstmt.setObject(1, value);  // Permite flexibilidad para distintos tipos (int, String, etc.)
+                result = pstmt.executeQuery();
+
+                // Si no hay resultados, puedes manejarlo aquí o en quien llama al método
+                if (!result.next()) {
+                    JOptionPane.showMessageDialog(null, "No se encontró ningún registro con el valor especificado.",
+                            "Sin resultados", JOptionPane.INFORMATION_MESSAGE);
+                    return null;
+                }
+
+                // Reposicionar cursor en la primera fila
+                result.beforeFirst();
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Error al obtener la fila: " + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "No hay conexión activa.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        return result;
+    }
 
     /**
      * Establece el tipo de escritura de la consulta.
