@@ -421,7 +421,6 @@ public class Consulta {
         return dataBases;
     }
 
-    
     /**
      * Obtiene el conjunto de tablas definidas por el usuario en la base de
      * datos actual a través de los metadatos de la conexión.
@@ -434,7 +433,7 @@ public class Consulta {
      * @return Un {@link ResultSet} que contiene información sobre las tablas
      * encontradas (nombre, tipo, esquema, etc.), o {@code null} si no hay
      * conexión activa o ocurre un error durante la consulta.
-     */  
+     */
     public static ResultSet getTablesMetaData(Connection conexion) {
         ResultSet tables = null;
 
@@ -517,6 +516,42 @@ public class Consulta {
     }
 
     /**
+     * Verifica si una tabla existe en la base de datos actual.
+     *
+     * <p>
+     * Este método utiliza los metadatos de la base de datos para determinar si
+     * la tabla especificada existe en el esquema actual.</p>
+     *
+     * @param connection Conexión activa a la base de datos.
+     * @param tableName Nombre de la tabla a verificar.
+     * @return true si la tabla existe, false en caso contrario.
+     */
+    public static boolean tableExists(Connection connection, String tableName) {
+        if (tableName == null || tableName.isBlank()) {
+            return false;
+        }
+
+        try {
+            metaDataDB = connection.getMetaData();
+            ResultSet tables = metaDataDB.getTables(
+                    Conexion.getBase(),
+                    "dbo",
+                    tableName,
+                    new String[]{"TABLE"}
+            );
+
+            return tables.next(); // Retorna true si encuentra al menos un resultado
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null,
+                    "Error al verificar la existencia de la tabla: " + e.getMessage(),
+                    "Error de Verificación",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }        
+
+    /**
      * Establece el tipo de escritura de la consulta.
      *
      * @param queryWriteType El tipo de operación de escritura (insert, update,
@@ -534,8 +569,8 @@ public class Consulta {
     public static ArrayList<String> getColumnsDescrip() {
         return columnsDescrip;
     }
-    
-    public static ArrayList<Integer> getColumnsType(){
+
+    public static ArrayList<Integer> getColumnsType() {
         return columnsType;
     }
 
